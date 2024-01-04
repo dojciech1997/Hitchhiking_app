@@ -2,9 +2,68 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memories</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway:400,700&display=swap">
 </head>
 <body>
+    <nav>
+        <ul>
+            <li><a href="{{ url_for('library') }}">Biblioteka</a></li>
+        </ul>
+    </nav>
 
+    <h2>Add a new person:</h2>
+    <form action="{{ url_for('add_person') }}" method="post">
+        <label for="name">Name:</label>
+        <input type="text" name="name" required>
+        <br>
+        <br>
+        <label for="photo_url">Photo URL:</label>
+        <input type="text" name="photo_url" required>
+        <br>
+        <br>
+        <label for="description">Description:</label>
+        <textarea name="description" required></textarea>
+        <br>
+        <br>
+        <label for="tags">Tags (comma-separated):</label>
+        <input type="text" name="tags">
+        <br>
+        <br>
+        <input type="submit" value="Add Person">
+    </form>
+
+    <h3>Search by Name or Tags:</h3>
+    <form action="{{ url_for('search_person') }}" method="post">
+        <label for="search_name">Name:</label>
+        <input type="text" name="search_name">
+        <br>
+        <br>
+        <label for="search_tags">Tags (comma-separated):</label>
+        <input type="text" name="search_tags">
+        <br>
+        <br>
+        <input type="submit" value="Search">
+    </form>
+
+    {% if people %}
+        <h4>Results:</h4>
+        <ul>
+            {% for person in people %}
+                <li>
+                    <img src="{{ person.photo_url }}" alt="{{ person.name }}" style="max-width: 100px;">
+                    <h3>{{ person.name }}</h3>
+                    <p>{{ person.description }}</p>
+                    <form action="{{ url_for('delete_person', person_id=person.id) }}" method="post" style="display: inline;">
+                        <input type="hidden" name="_method" value="DELETE">
+                        <input type="submit" value="Delete">
+                    </form>
+                </li>
+            {% endfor %}
+        </ul>
+    {% endif %}
 </body>
 </html>
