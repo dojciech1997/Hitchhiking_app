@@ -1,7 +1,10 @@
 from flask import render_template, request, redirect, url_for
-from app import app, db
-from app.models import Person, Tag
-from app.forms import TagForm
+#from app import app, db
+from db_file import db
+from __init__ import app
+#from app.models import Person, Tag
+from models import Person, Tag
+#from app.forms import TagForm
 import logging
 
 @app.route('/')
