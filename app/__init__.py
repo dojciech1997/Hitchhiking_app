@@ -3,15 +3,23 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 
 app = Flask(__name__)
-app.run(port=5000)
-app.run(port=5001)
-#app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://wojtek:password@db:5432/devops_db'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///devops.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://wojtek:password@database:5432/devops_db'
+#app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///devops.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['DEBUG'] = True
 app.config['TESTING'] = True
-from app.db_file import db
 
-db.init_app(app)
+db = SQLAlchemy(app)
 
-from app import models, views
+migrate = Migrate(app,db)
 
+#from app.db_file import db
+#db.init_app(app)
+
+# from app import models, views
+
+from app.models import Person, Tag
+from app.views import *
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000)
