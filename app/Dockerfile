@@ -13,3 +13,4 @@ CMD ["flask", "db", "migrate"]
 CMD ["flask", "db", "upgrade"]
 
 CMD ["flask", "run", "--host=0.0.0.0"]
+
