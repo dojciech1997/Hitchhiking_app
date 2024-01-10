@@ -31,7 +31,7 @@ def index():
             'description': person_data[5],
         }
         people.append(person)
-    return render_template('index.html', people=people)
+    return render_template('index.html')
 
 @app.route('/add_person', methods=['POST'])
 def add_person():
@@ -77,6 +77,7 @@ def add_person():
 def delete_person(person_id):
     with get_db_connection() as conn:
         with conn.cursor() as cursor:
+            cursor.execute("DELETE FROM person_tag WHERE person_id = %s", (person_id,))
             cursor.execute("DELETE FROM person WHERE id = %s", (person_id,))
     # person = Person.query.get(person_id)
     # if person:
@@ -116,7 +117,7 @@ def edit_person_from_library(person_id):
                             cursor.execute("INSERT INTO person_tag (person_id, tag_id) VALUES (%s, %s)",
                                            (person_id, tag_id))
 
-    logging.debug(f'Updated person tags: {person.tags}')
+    logging.debug(f'Updated person tags: {tags}')
     # person = Person.query.get_or_404(person_id)
     #
     # person.name = request.form['name']
@@ -194,7 +195,6 @@ def search_person():
     #         tag = Tag.query.filter_by(name=tag_name).first()
     #         if tag:
     #             people.extend(tag.people)
-    # # # Dodaj standardowe rekordy do listy
     # # people.extend(Person.query.all())
 
     return render_template('index.html', people=people)

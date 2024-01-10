@@ -8,6 +8,10 @@ services:
       - "5000:5000"
     environment:
       - DATABASE_HOST=database
+    volumes:
+      - ./app:/app
+    entrypoint: /app/entrypoint.sh
+    restart: unless-stopped
   database:
     image: postgres:latest
     volumes:
