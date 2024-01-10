@@ -25,6 +25,8 @@
             <li><a href="{{ url_for('index') }}">Home</a></li>
         </ul>
     </nav>
+    <br>
+    <br>
     <h1>My People</h1>
     <ul>
         {% for person in people %}
@@ -32,7 +34,7 @@
                 <img src="{{ person.photo_url }}" alt="{{ person.name }}" style="max-width: 100px;">
                 <h3>{{ person.name }}</h3>
                 <p>{{ person.description }}</p>
-                <p>Tags: {% for tag in person.tags %}{{ tag.name }}{% if not loop.last %}, {% endif %}{% endfor %}</p>
+                <p>Tags: {{ person.tags }}</p>
                 <form action="{{ url_for('delete_person', person_id=person.id) }}" method="post" style="display: inline;">
                     <input type="hidden" name="_method" value="DELETE">
                     <input type="submit" value="Delete">

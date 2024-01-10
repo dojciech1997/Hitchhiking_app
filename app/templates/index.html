@@ -14,7 +14,8 @@
             <li><a href="{{ url_for('library') }}">Biblioteka</a></li>
         </ul>
     </nav>
-
+    <br>
+    <br>
     <h2>Add a new person:</h2>
     <form action="{{ url_for('add_person') }}" method="post">
         <label for="name">Name:</label>
@@ -57,6 +58,7 @@
                     <img src="{{ person.photo_url }}" alt="{{ person.name }}" style="max-width: 100px;">
                     <h3>{{ person.name }}</h3>
                     <p>{{ person.description }}</p>
+                    <p>Tags: {{ person.tags }}</p>
                     <form action="{{ url_for('delete_person', person_id=person.id) }}" method="post" style="display: inline;">
                         <input type="hidden" name="_method" value="DELETE">
                         <input type="submit" value="Delete">

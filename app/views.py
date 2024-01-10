@@ -14,6 +14,20 @@ def get_db_connection():
         port=5432
     )
 
+def get_tags_for_person(person_id):
+    with get_db_connection() as conn:
+        with conn.cursor() as cursor:
+            cursor.execute("""
+                SELECT tag.name
+                FROM tag
+                JOIN person_tag ON tag.id = person_tag.tag_id
+                WHERE person_tag.person_id = %s AND tag.name IS NOT NULL
+            """, (person_id,))
+            tags_data = cursor.fetchall()
+
+    tags = [tag_data[0] for tag_data in tags_data]
+    return tags
+
 @app.route('/')
 def index():
     with get_db_connection() as conn:
@@ -29,6 +43,7 @@ def index():
             'latitude': person_data[3],
             'longitude': person_data[4],
             'description': person_data[5],
+            'tags': get_tags_for_person(person_data[0]),
         }
         people.append(person)
     return render_template('index.html')
@@ -48,15 +63,14 @@ def add_person():
         for tag_name in tags_list:
             with get_db_connection() as conn:
                 with conn.cursor() as cursor:
-                    cursor.execute("INSERT INTO tag (name) VALUES (%s) ON CONFLICT (name) DO NOTHING RETURNING id",
-                                   (tag_name,))
-                    tag_id = cursor.fetchone()[0] if cursor.rowcount > 0 else None
+                    cursor.execute("INSERT INTO tag (name) VALUES (%s) ON CONFLICT (name) DO UPDATE SET name = %s RETURNING id", (tag_name, tag_name))
+                    tag_id = cursor.fetchone()[0]
+                    # tag_id = cursor.fetchone()[0] if cursor.rowcount > 0 else None
 
-            if tag_id:
-                with get_db_connection() as conn:
-                    with conn.cursor() as cursor:
-                        cursor.execute("INSERT INTO person_tag (person_id, tag_id) VALUES (%s, %s)",
-                                       (new_person_id, tag_id))
+            # if tag_id:
+            with get_db_connection() as conn:
+                with conn.cursor() as cursor:
+                    cursor.execute("INSERT INTO person_tag (person_id, tag_id) VALUES (%s, %s)", (new_person_id, tag_id))
 
     # new_person = Person(name=name, photo_url=photo_url, description=description)
     # tags = request.form.get('tags')
@@ -98,8 +112,7 @@ def edit_person_from_library(person_id):
 
         with get_db_connection() as conn:
             with conn.cursor() as cursor:
-                cursor.execute("UPDATE person SET name = %s, photo_url = %s, description = %s WHERE id = %s",
-                               (name, photo_url, description, person_id))
+                cursor.execute("UPDATE person SET name = %s, photo_url = %s, description = %s WHERE id = %s", (name, photo_url, description, person_id))
 
         tags = request.form.get('tags')
         if tags:
@@ -107,17 +120,18 @@ def edit_person_from_library(person_id):
             for tag_name in tags_list:
                 with get_db_connection() as conn:
                     with conn.cursor() as cursor:
-                        cursor.execute("INSERT INTO tag (name) VALUES (%s) ON CONFLICT (name) DO NOTHING RETURNING id",
-                                       (tag_name,))
-                        tag_id = cursor.fetchone()[0] if cursor.rowcount > 0 else None
+                        cursor.execute("INSERT INTO tag (name) VALUES (%s) ON CONFLICT (name) DO UPDATE SET name = %s RETURNING id", (tag_name, tag_name))
+                        tag_id = cursor.fetchone()[0]
+                        # tag_id = cursor.fetchone()[0] if cursor.rowcount > 0 else None
 
-                if tag_id:
-                    with get_db_connection() as conn:
-                        with conn.cursor() as cursor:
-                            cursor.execute("INSERT INTO person_tag (person_id, tag_id) VALUES (%s, %s)",
-                                           (person_id, tag_id))
+                # if tag_id:
+                with get_db_connection() as conn:
+                    with conn.cursor() as cursor:
+                        cursor.execute("INSERT INTO person_tag (person_id, tag_id) VALUES (%s, %s)", (person_id, tag_id))
 
-    logging.debug(f'Updated person tags: {tags}')
+    #logging.debug(f'Updated person tags: {tags}')
+
+
     # person = Person.query.get_or_404(person_id)
     #
     # person.name = request.form['name']
@@ -159,18 +173,31 @@ def search_person():
                 'latitude': person_data[3],
                 'longitude': person_data[4],
                 'description': person_data[5],
+                'tags': get_tags_for_person(person_data[0]),
             }
             people.append(person)
-
     if search_tags:
         tags_list = [tag.strip() for tag in search_tags.split(',')]
-        for tag_name in tags_list:
-            with get_db_connection() as conn:
-                with conn.cursor() as cursor:
-                    cursor.execute("SELECT person.* FROM person JOIN person_tag ON person.id = person_tag.person_id "
-                                   "JOIN tag ON person_tag.tag_id = tag.id WHERE tag.name ILIKE %s",
-                                   (f"%{tag_name}%",))
-                    people_data = cursor.fetchall()
+        with get_db_connection() as conn:
+            with conn.cursor() as cursor:
+                query = """
+                SELECT person.*
+                FROM person
+                JOIN person_tag ON person.id = person_tag.person_id
+                JOIN tag ON person_tag.tag_id = tag.id
+                WHERE tag.name IN %s
+                """
+                cursor.execute(query, (tuple(tags_list),))
+                people_data = cursor.fetchall()
+    # if search_tags:
+    #     tags_list = [tag.strip() for tag in search_tags.split(',')]
+    #     for tag_name in tags_list:
+    #         with get_db_connection() as conn:
+    #             with conn.cursor() as cursor:
+    #                 cursor.execute("SELECT person.* FROM person JOIN person_tag ON person.id = person_tag.person_id "
+    #                                "JOIN tag ON person_tag.tag_id = tag.id WHERE tag.name ILIKE %s",
+    #                                (f"%{tag_name}%",))
+    #                 people_data = cursor.fetchall()
 
         for person_data in people_data:
             person = {
@@ -180,6 +207,7 @@ def search_person():
                 'latitude': person_data[3],
                 'longitude': person_data[4],
                 'description': person_data[5],
+                'tags': get_tags_for_person(person_data[0]),
             }
             people.append(person)
     # # if search_id:
@@ -216,6 +244,7 @@ def library():
             'latitude': person_data[3],
             'longitude': person_data[4],
             'description': person_data[5],
+            'tags': get_tags_for_person(person_data[0]),
         }
         people.append(person)
     # people = Person.query.all()
