@@ -72,19 +72,6 @@ def add_person():
                 with conn.cursor() as cursor:
                     cursor.execute("INSERT INTO person_tag (person_id, tag_id) VALUES (%s, %s)", (new_person_id, tag_id))
 
-    # new_person = Person(name=name, photo_url=photo_url, description=description)
-    # tags = request.form.get('tags')
-    # if tags:
-    #     tags_list = [tag.strip() for tag in tags.split(',')]
-    #     for tag_name in tags_list:
-    #         tag = Tag.query.filter_by(name=tag_name).first()
-    #         if not tag:
-    #             tag = Tag(name=tag_name)
-    #             db.session.add(tag)
-    #             db.session.commit()
-    #         new_person.tags.append(tag)
-    # db.session.add(new_person)
-    # db.session.commit()
     return redirect(url_for('index'))
 
 @app.route('/delete_person/<int:person_id>', methods=['POST', 'DELETE'])
@@ -93,10 +80,7 @@ def delete_person(person_id):
         with conn.cursor() as cursor:
             cursor.execute("DELETE FROM person_tag WHERE person_id = %s", (person_id,))
             cursor.execute("DELETE FROM person WHERE id = %s", (person_id,))
-    # person = Person.query.get(person_id)
-    # if person:
-    #     db.session.delete(person)
-    #     db.session.commit()
+
     return redirect(url_for('library'))
 
 @app.route('/edit_person_from_library/<int:person_id>', methods=['POST'])
@@ -129,27 +113,6 @@ def edit_person_from_library(person_id):
                     with conn.cursor() as cursor:
                         cursor.execute("INSERT INTO person_tag (person_id, tag_id) VALUES (%s, %s)", (person_id, tag_id))
 
-    #logging.debug(f'Updated person tags: {tags}')
-
-
-    # person = Person.query.get_or_404(person_id)
-    #
-    # person.name = request.form['name']
-    # person.photo_url = request.form['photo_url']
-    # person.description = request.form['description']
-    # tags = request.form.get('tags')
-    # if tags:
-    #     tags_list = [tag.strip() for tag in tags.split(',')]
-    #     person.tags = []
-    #     for tag_name in tags_list:
-    #         tag = Tag.query.filter_by(name=tag_name).first()
-    #         if not tag:
-    #             tag = Tag(name=tag_name)
-    #             db.session.add(tag)
-    #             db.session.commit()
-    #         person.tags.append(tag)
-    # db.session.commit()
-    # logging.debug(f'Updated person tags: {person.tags}')
     return redirect(url_for('library'))
 
 @app.route('/search_person', methods=['POST'])
@@ -189,15 +152,6 @@ def search_person():
                 """
                 cursor.execute(query, (tuple(tags_list),))
                 people_data = cursor.fetchall()
-    # if search_tags:
-    #     tags_list = [tag.strip() for tag in search_tags.split(',')]
-    #     for tag_name in tags_list:
-    #         with get_db_connection() as conn:
-    #             with conn.cursor() as cursor:
-    #                 cursor.execute("SELECT person.* FROM person JOIN person_tag ON person.id = person_tag.person_id "
-    #                                "JOIN tag ON person_tag.tag_id = tag.id WHERE tag.name ILIKE %s",
-    #                                (f"%{tag_name}%",))
-    #                 people_data = cursor.fetchall()
 
         for person_data in people_data:
             person = {
@@ -210,20 +164,6 @@ def search_person():
                 'tags': get_tags_for_person(person_data[0]),
             }
             people.append(person)
-    # # if search_id:
-    # #     person = Person.query.get(search_id)
-    # #     if person:
-    # #         people.append(person)
-    # #         # return render_template('index.html', people=[person])
-    # if search_name:
-    #     people.extend(Person.query.filter(Person.name.like(f"%{search_name}%")).all())
-    # if search_tags:
-    #     tags_list = [tag.strip() for tag in search_tags.split(',')]
-    #     for tag_name in tags_list:
-    #         tag = Tag.query.filter_by(name=tag_name).first()
-    #         if tag:
-    #             people.extend(tag.people)
-    # # people.extend(Person.query.all())
 
     return render_template('index.html', people=people)
 

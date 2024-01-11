@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS person (
-    id SERIAL PRIMARY KEY
+    id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     photo_url VARCHAR(500),
     latitude FLOAT,
