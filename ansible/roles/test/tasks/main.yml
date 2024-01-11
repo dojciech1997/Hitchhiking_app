@@ -1,0 +1,17 @@
+- name: Create Docker Network
+  win_shell: docker network create hitchhiking-network
+
+- name: Run App Container
+  win_shell: docker run -d --name container_app --network hitchhiking-network -p {{ app_port }}:{{ app_port }} hitchhiking_app-app1:latest
+
+- name: Wait for App Container to Start
+  win_shell: Start-Sleep -Seconds 10
+
+- name: Run DB Container
+  win_shell: docker run -d --name container_db --network hitchhiking-network -p {{ database_port }}:{{ database_port }} postgres:latest
+
+- name: Wait for DB Container to Start
+  win_shell: Start-Sleep -Seconds 10
+
+- name: Run Tests
+  win_shell: docker exec container_app python test_script.py

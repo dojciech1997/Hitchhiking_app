@@ -1,0 +1,6 @@
+- name: Clean up Docker Containers and Network
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: Clear Docker Resources
+      win_shell: C:/Users/Wojtek/PycharmProjects/Hitchhiking_app/docker-clear.bat

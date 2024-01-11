@@ -1,0 +1,7 @@
+---
+- name: Build Docker Images
+  hosts: localhost
+  gather_facts: false
+
+  roles:
+    - role: build
